@@ -21,24 +21,24 @@ bool sphere2Sphere(float sphere1XPos, float sphere1ZPos, float sphere1Rad, float
 
 // frog details NEW //
 
-const int frogAmount = 1;				// Number of frogs
+const int kFrogNum = 4;				// Number of frogs
 bool frogFlipping = false;				// Set frog flipping to true or false
 
-int frogStateTracker[frogAmount];		// Frog game state
+int frogStateTracker[kFrogNum];		// Frog game state
 int currentFrog = 0;				   // Current Frog
-IModel* frog[frogAmount];				// Model for each frog
+IModel* frog[kFrogNum];				// Model for each frog
 
-void EnterFlippingPhase()				// Activate frog flipping
-{												
-	frogFlipping = true;
-	frog[currentFrog]->RotateLocalZ(180.0f);
-}
+//void EnterFlippingPhase()				// Activate frog flipping
+//{												
+//	frogFlipping = true;
+//	frog[currentFrog]->RotateLocalZ(180.0f);
+//}
 
-void LeaveFlippingPhase()			// Leave frog flipping stage
-{	// Activate frog flipping
-	frogFlipping = false;
-	frog[currentFrog]->RotateLocalZ(0.0f);
-}
+//void LeaveFlippingPhase()			// Leave frog flipping stage
+//{	// Activate frog flipping
+//	frogFlipping = false;
+//	frog[currentFrog]->RotateLocalZ(0.0f);
+//}
 
 void main()
 {
@@ -106,16 +106,19 @@ void main()
 
 	// frog 1 model
 	IMesh* frogMesh = myEngine->LoadMesh("frog.x");
-	for (int i = 0; i < frogAmount; i++)
+	
+	IModel* frog[kFrogNum];
+	float frogXs[kFrogNum] = { 5, -5, 0, 0 };
+	float frogYs[kFrogNum] = { 0, 0, 0, 0 };
+	float frogZs[kFrogNum] = { 0, 0, -5, 5 };
+	
+	for (int i = 0; i < kFrogNum; i++)
 	{
-		frog[FirstFrog] = frogMesh->CreateModel(5, 0, 0); // Starting point
-		frog[FirstFrog]->RotateLocalY(90.0f);
-		frog[SecondFrog] = frogMesh->CreateModel(-5, 0, 0); // Starting point
-		frog[SecondFrog]->RotateLocalY(-90.0f);
-		frog[ThirdFrog] = frogMesh->CreateModel(0, 0, -5); // Starting point
-		frog[ThirdFrog]->RotateLocalY(180.0f);
-		frog[FourthFrog] = frogMesh->CreateModel(0, 0, 5); // Starting point
+		frog[i] = frogMesh->CreateModel(frogXs[i], frogYs[i], frogZs[i]);
 	}
+	frog[0]->RotateLocalY(90.0f);
+	frog[1]->RotateLocalY(-90.0f);
+	frog[2]->RotateLocalY(180.0f);
 
 	// rover model
 	IMesh* roverMesh = myEngine->LoadMesh("rover.x");
@@ -245,7 +248,7 @@ void main()
 			{
 				currentState = over;
 			}
-			else if (frog[FirstFrog]->GetLocalX() >= kIslandMaxXPos || frog[FirstFrog]->GetLocalX() <= kIslandMinXPos && frog[SecondFrog]->GetLocalX() >= kIslandMaxXPos || frog[SecondFrog]->GetLocalX() <= kIslandMinXPos)
+			else if (frog[0]->GetLocalX() >= kIslandMaxXPos || frog[0]->GetLocalX() <= kIslandMinXPos && frog[1]->GetLocalX() >= kIslandMaxXPos || frog[1]->GetLocalX() <= kIslandMinXPos)
 			{
 				currentState = over;
 			}
@@ -271,39 +274,39 @@ void main()
 				{
 				case playing:
 				{
-					frog[FirstFrog]->MoveLocalZ(frog1Speed * deltaTime);
-					frog[SecondFrog]->MoveLocalZ(frog2Speed * deltaTime);
-					frog[ThirdFrog]->MoveLocalZ(frog3Speed * deltaTime);
-					frog[FourthFrog]->MoveLocalZ(frog4Speed * deltaTime);
-					frogStateTracker[FirstFrog] = moving;
-					frogStateTracker[SecondFrog] = moving;
+					frog[0]->MoveLocalZ(frog1Speed * deltaTime);
+					frog[1]->MoveLocalZ(frog2Speed * deltaTime);
+					frog[2]->MoveLocalZ(frog3Speed * deltaTime);
+					frog[3]->MoveLocalZ(frog4Speed * deltaTime);
+					frogStateTracker[0] = moving;
+					frogStateTracker[1] = moving;
 					//currentFrog2State = moving2;
 					// check for events causing state change
 					// proximity to frogs
-					if (sphere2Sphere(rover->GetX(), rover->GetZ(), roverRadius, frog[FirstFrog]->GetX(), frog[FirstFrog]->GetZ(), frogAwarenessRadius))
+					if (sphere2Sphere(rover->GetX(), rover->GetZ(), roverRadius, frog[0]->GetX(), frog[0]->GetZ(), frogAwarenessRadius))
 					{
 						// collision occured
-						frog[FirstFrog]->MoveLocalZ(frog1Speed * deltaTime);
-						frog[SecondFrog]->MoveLocalZ(frog2Speed * deltaTime);
+						frog[0]->MoveLocalZ(frog1Speed * deltaTime);
+						frog[1]->MoveLocalZ(frog2Speed * deltaTime);
 						//frogFlipping = true;
 						//currentState = paused;
 
 						// touching frog
-						if (sphere2Sphere(rover->GetX(), rover->GetZ(), roverRadius, frog[FirstFrog]->GetX(), frog[FirstFrog]->GetZ(), frogRadius && frogStateTracker[FirstFrog] == moving && frogStateTrackers == moving))
+						if (sphere2Sphere(rover->GetX(), rover->GetZ(), roverRadius, frog[0]->GetX(), frog[0]->GetZ(), frogRadius && frogStateTracker[0] == moving && frogStateTrackers == moving))
 						{
-							frogStateTracker[FirstFrog] = dead;
-							frogStateTracker[FirstFrog] = flipping;
+							frogStateTracker[0] = dead;
+							frogStateTracker[0] = flipping;
 							//frog[FirstFrog]->RotateLocalZ(180);   // define constant float for final submission
 							//frogFlipping = true;
 							/* frog1Speed = 0;
 							score += 10;*/
-							if (sphere2Sphere(rover->GetX(), rover->GetZ(), roverRadius, frog[FirstFrog]->GetX(), frog[FirstFrog]->GetZ(), frogRadius && FirstFrog == dead && addOrNot == false && FirstFrog == flipping && frogFlipping == true))
+							if (sphere2Sphere(rover->GetX(), rover->GetZ(), roverRadius, frog[0]->GetX(), frog[0]->GetZ(), frogRadius && FirstFrog == dead && addOrNot == false && FirstFrog == flipping && frogFlipping == true))
 							{
 								addOrNot = true;
 								score = +10;
-								frogStateTracker[FirstFrog] = dead;
-								frog[FirstFrog]->RotateLocalZ(180);
-								LeaveFlippingPhase();
+								frogStateTracker[0] = dead;
+								frog[0]->RotateLocalZ(180);
+								//LeaveFlippingPhase();
 								//frogFlipping = false;
 
 
@@ -319,19 +322,19 @@ void main()
 						}
 						// touching frog
 
-						else if (sphere2Sphere(rover->GetX(), rover->GetZ(), roverRadius, frog[SecondFrog]->GetX(), frog[SecondFrog]->GetZ(), frogRadius && frogStateTracker[SecondFrog] == moving))
+						else if (sphere2Sphere(rover->GetX(), rover->GetZ(), roverRadius, frog[1]->GetX(), frog[1]->GetZ(), frogRadius && frogStateTracker[1] == moving))
 						{
-							EnterFlippingPhase();
+							//EnterFlippingPhase();
 							//frog[SecondFrog]->RotateLocalZ(180.0f);
 							score += 10;
-							frogStateTracker[SecondFrog] = dead;
+							frogStateTracker[1] = dead;
 							//frog2Speed = 0;
-							if (sphere2Sphere(rover->GetX(), rover->GetZ(), roverRadius, frog[SecondFrog]->GetX(), frog[SecondFrog]->GetZ(), frogRadius && frogStateTracker[SecondFrog] == dead && addOrNot == false))
+							if (sphere2Sphere(rover->GetX(), rover->GetZ(), roverRadius, frog[1]->GetX(), frog[1]->GetZ(), frogRadius && frogStateTracker[1] == dead && addOrNot == false))
 							{
 								addOrNot = true;
 								score = + 10;
-								frogStateTracker[SecondFrog] = dead;
-								LeaveFlippingPhase();
+								frogStateTracker[1] = dead;
+								//LeaveFlippingPhase();
 								frog2Speed = 0;
 								//Rotation = false;
 								//frog[FirstFrog]->RotateLocalZ(180.0f);  // check if frog is alivee before adding score
@@ -361,7 +364,7 @@ void main()
 				}
 				case won:
 				{
-					if (frogStateTracker[FirstFrog] == dead && frogStateTracker[SecondFrog] == dead)
+					if (frogStateTracker[0] == dead && frogStateTracker[1] == dead)
 					{
 						outText << "Game Won: " << score;
 						myFont->Draw(outText.str(), 20, 20);
@@ -371,7 +374,7 @@ void main()
 				}
 				case over:
 				{
-					if (frogStateTracker[FirstFrog] != dead && frogStateTracker[SecondFrog] != dead)
+					if (frogStateTracker[0] != dead && frogStateTracker[1] != dead)
 					{
 						outText << "Game Over: " << score;
 						myFont->Draw(outText.str(), 20, 20);
