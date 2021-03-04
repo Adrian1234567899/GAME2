@@ -57,6 +57,29 @@ void main()
 	const float kSphereRadius = 4.0f;
 	const float kBoxRadius = 4.0f;
 	const float kGameSpeed = 0.50f;
+	const float kPortalScale = 1.2f;
+	
+	// camera positions
+	const float kCamYPos = 120.0f;
+	const float kCamZPos = -100.0f;
+	const float kCamRot = 50.0f;
+
+	// frogs Initial Rotation
+	const float kFrog1IntialRot = 90.0f;
+	const float kFrog2IntialRot = -90.0f;
+	const float kFrog3IntialRot = 180.0f;
+
+	// Frogs final rotation
+	const float kFrog1FinalRot = 180.0f;
+	const float kFrog2FinalRot = 180.0f;
+	const float kFrog3FinalRot = 180.0f;
+	const float kFrog4FinalRot = 180.0f;
+
+	// Rover positions
+	const float kRoverZPos = -50.0f;
+	const float kIslandYPos = -6.0f;
+	const float kWaterYPos = -5.0f;
+	const float kSkyYPos = -960.0f;
 
 	// EKeyCode's for movement of the car
 
@@ -64,6 +87,8 @@ void main()
 	const EKeyCode kMoveBackwardsKey = Key_S;
 	const EKeyCode kMoveLeftKey = Key_A;
 	const EKeyCode kMoveRightKey = Key_D;
+	const EKeyCode kPauseKey = Key_P;
+	const EKeyCode kQuitKey = Key_Escape;
 
 	// Island Max Boundaries
 
@@ -94,15 +119,15 @@ void main()
 
 	// sky model
 	IMesh* skyMesh = myEngine->LoadMesh("skybox.x");
-	IModel* sky = skyMesh->CreateModel(0, -960, 0);
+	IModel* sky = skyMesh->CreateModel(0, kSkyYPos, 0);
 
 	// floor of water model
 	IMesh* floorMesh = myEngine->LoadMesh("surface.x");
-	IModel* floor = floorMesh->CreateModel(0, -5, 0);
+	IModel* floor = floorMesh->CreateModel(0, kWaterYPos, 0);
 
 	// island model
 	IMesh* islandMesh = myEngine->LoadMesh("island.x");
-	IModel* island = islandMesh->CreateModel(0, -6, 0);
+	IModel* island = islandMesh->CreateModel(0, kIslandYPos, 0);
 
 	// frog 1 model
 	IMesh* frogMesh = myEngine->LoadMesh("frog.x");
@@ -116,13 +141,13 @@ void main()
 	{
 		frog[i] = frogMesh->CreateModel(frogXs[i], frogYs[i], frogZs[i]);
 	}
-	frog[0]->RotateLocalY(90.0f);
-	frog[1]->RotateLocalY(-90.0f);
-	frog[2]->RotateLocalY(180.0f);
+	frog[0]->RotateLocalY(kFrog1IntialRot);
+	frog[1]->RotateLocalY(kFrog2IntialRot);
+	frog[2]->RotateLocalY(kFrog3IntialRot);
 
 	// rover model
 	IMesh* roverMesh = myEngine->LoadMesh("rover.x");
-	IModel* rover = roverMesh->CreateModel(0, 0, -50);
+	IModel* rover = roverMesh->CreateModel(0, 0, kRoverZPos);
 
 	// portal
 	IMesh* portalMesh = myEngine->LoadMesh("portal.x");
@@ -137,10 +162,10 @@ void main()
 	for (int i = 0; i < kNumPortal; i++)
 	{
 		portal[i] = portalMesh->CreateModel(portalXs[i], 0.0f, portalZs[i]);
-		portal[i]->Scale(1.2);
+		portal[i]->Scale(kPortalScale);
 	}
 
-	float kFrogSpeed = 0.05;
+	float kFrogSpeed = 0.25;
 
 	// gamestate
 	gameStates currentState = playing;
@@ -148,8 +173,8 @@ void main()
 
 
 	// create camera and rotate it around x axis
-	ICamera* myCamera = myEngine->CreateCamera(kManual, 0.0f, 120.0f, -100.0f);  // define constant floats for final submission
-	myCamera->RotateLocalX(50.0f);
+	ICamera* myCamera = myEngine->CreateCamera(kManual, 0.0f, kCamYPos, kCamZPos);  // define constant floats for final submission
+	myCamera->RotateLocalX(kCamRot);
 
 	//myCamera->AttachToParent(rover);
 
@@ -163,6 +188,8 @@ void main()
 	int score = 0;
 	int addOrNot = true;
 	bool Rotation = true;
+
+	bool canRotate[kFrogNum];		// Stores state to which frogs can rotate
 
 	// The main game loop, repeat until engine is stopped
 	while (myEngine->IsRunning())
@@ -296,7 +323,8 @@ void main()
 						{
 							frogStateTracker[0] = dead;
 							frogStateTracker[0] = flipping;
-							//frog[FirstFrog]->RotateLocalZ(180);   // define constant float for final submission
+							//canRotate[i] = true;
+							//frog[i]->RotateLocalZ(180);   // define constant float for final submission
 							//frogFlipping = true;
 							/* frog1Speed = 0;
 							score += 10;*/
@@ -305,7 +333,10 @@ void main()
 								addOrNot = true;
 								score = +10;
 								frogStateTracker[0] = dead;
-								frog[0]->RotateLocalZ(180);
+								canRotate[i] = true;
+								frog[0]->RotateLocalZ(kFrog1FinalRot);
+								//canRotate[0] = false;
+								frog[0]->RotateLocalZ(0);
 								//LeaveFlippingPhase();
 								//frogFlipping = false;
 
@@ -319,6 +350,8 @@ void main()
 								//frog[FirstFrog]->RotateLocalZ(0.0f);  // check if frog is alivee before adding score
 
 							}
+							canRotate[0] = false;
+							frog[0]->RotateLocalZ(0);
 						}
 						// touching frog
 
@@ -354,7 +387,7 @@ void main()
 				}
 				case paused:
 				{
-					if (myEngine->KeyHit(Key_P)) // Change to pauseKey for final submission
+					if (myEngine->KeyHit(kPauseKey)) // Change to pauseKey for final submission
 					{
 						outText << "Paused: " << score;
 						myFont->Draw(outText.str(), 20, 20);
@@ -401,7 +434,7 @@ void main()
 		} // end of if (isPaused == false)
 
 		// check if P key is hit then pause/ unpause the game
-		if (myEngine->KeyHit(Key_P)) {     // Change to pauseKey for final submission
+		if (myEngine->KeyHit(kPauseKey)) {     // Change to pauseKey for final submission
 			if (isPaused == true) {
 				isPaused = false;
 			}
@@ -411,7 +444,7 @@ void main()
 		}
 
 		// exit game when escape key hit
-		if (myEngine->KeyHit(Key_Escape)) {
+		if (myEngine->KeyHit(kQuitKey)) {
 			myEngine->Stop();
 		}
 	} // end of Game Loop
